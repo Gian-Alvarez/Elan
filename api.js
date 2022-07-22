@@ -164,6 +164,7 @@ exports.setApp = function ( app, client )
 
         const {ahjst, jwtToken} = req.body;
 
+        /*
         try
         {
             if(token.isExpired(jwtToken))
@@ -177,6 +178,7 @@ exports.setApp = function ( app, client )
         {
             console.log(e.message);
         }
+        */
 
         try{
             let userEmail = {Email_Token:ahjst};
