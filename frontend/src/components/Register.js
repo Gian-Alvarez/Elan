@@ -2,27 +2,26 @@ import React, { useDebugValue, useState } from 'react';
 
 function Register()
 {
+    var storage = require('../tokenStorage.js');
+    let bp = require('./Path.js');
+
     var username = '';
     var password = '';
     var firstName = '';
     var lastName = '';
     var email = '';
-
-    const [message,setMessage] = useState('');
-
-    let bp = require('./Path.js');
+    const [message, setMessage] = useState('');
 
     const doRegister = async event => 
     {
         event.preventDefault();
 
-        let obj = {username:username.value,password:password.value, firstName:firstName.value, lastName:lastName.value, email:email.value};
+        let obj = {username:username.value, password:password.value, firstName:firstName.value, lastName:lastName.value, email:email.value, firstTimeLogin:0, emailVerify:0};
         let js = JSON.stringify(obj);
 
         try
         {    
-            const response = await fetch(bp.buildPath('api/register'),
-                {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
+            const response = await fetch(bp.buildPath('api/register'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
 
             let txt = await response.text();    
             let res = JSON.parse(txt);
@@ -33,7 +32,9 @@ function Register()
             }
             else
             {
+                storage.storeToken(res.token);
                 setMessage('New User has been added');
+                window.location.href = '/'
             }
         }
         catch(e)
@@ -41,7 +42,6 @@ function Register()
             setMessage(e.toString());
         }    
     };
-
 
     return(
         <div id="RegisterDiv">

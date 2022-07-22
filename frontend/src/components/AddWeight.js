@@ -10,21 +10,19 @@ function AddWeight()
     let _ud = localStorage.getItem('user_data');
     let ud = JSON.parse(_ud);
     let userId = ud.id;
-    let firstName = ud.firstName;
-    let lastName = ud.lastName;
+
     let bp = require('./Path.js');
 
     const doAddWeight = async event => 
     {
         event.preventDefault();
 
-        let obj = {date:date.value, weight:weight.value };
+        let obj = {date:date.value, weight:weight.value, userId:userId};
         let js = JSON.stringify(obj);
 
         try
         {    
-            const response = await fetch(bp.buildPath('api/addWeight'),
-                {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
+            const response = await fetch(bp.buildPath('api/addWeight'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
 
             let txt = await response.text();    
             let res = JSON.parse(txt);

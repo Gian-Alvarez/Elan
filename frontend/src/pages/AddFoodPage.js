@@ -6,10 +6,10 @@ import AddFood from '../components/AddFood';
 const AddFoodPage = () =>
 {
     return(
-      <div>
-        <PageTitle />
-        <AddFood />
-      </div>
+		<div>
+			<PageTitle />
+			<AddFood />
+		</div>
     );
 };
 

@@ -1,16 +1,16 @@
 import React from 'react';
 
 import PageTitle from '../components/PageTitle';
-import Login from '../components/Login';
+import FTLogin from '../components/FTLogin';
 
-const LoginPage = () =>
+const FTLoginPage = () =>
 {
 	return(
 		<div>
 			<PageTitle />
-			<Login />
+			<FTLogin />
 		</div>
 	);
 };
 
-export default LoginPage;
+export default FTLoginPage;

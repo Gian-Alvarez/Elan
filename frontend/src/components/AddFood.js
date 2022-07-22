@@ -8,6 +8,11 @@ function AddFood()
     var foodSugar = 0;
     var foodFat = 0;
     var foodSodium = 0;
+    var foodCalorie = 0;
+
+    let _ud = localStorage.getItem('user_data');
+    let ud = JSON.parse(_ud);
+    let userId = ud.id;
 
     const [message,setMessage] = useState('');
 
@@ -17,13 +22,12 @@ function AddFood()
     {
         event.preventDefault();
 
-        let obj = {foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value};
+        let obj = {userId:userId, foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value, foodCalorie:foodCalorie.value};
         let js = JSON.stringify(obj);
 
         try
         {    
-            const response = await fetch(bp.buildPath('api/addFood'),
-                {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
+            const response = await fetch(bp.buildPath('api/addFood'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
 
             let txt = await response.text();    
             let res = JSON.parse(txt);
@@ -60,6 +64,8 @@ function AddFood()
             ref={(c) => foodFat = c} /> <br />
             <input type="number" id="foodSodium" placeholder="Sodium" 
             ref={(c) => foodSodium = c} /> <br />
+            <input type="number" id="foodCalorie" placeholder="Calories" 
+            ref={(c) => foodCalorie = c} /> <br />
             <input type="submit" id="addFoodButton" class="buttons" value = "Do It"
             onClick={doAddFood} />
             </form>

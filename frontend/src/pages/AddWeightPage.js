@@ -6,10 +6,10 @@ import AddWeight from '../components/AddWeight';
 const AddWeightPage = () =>
 {
     return(
-      <div>
-        <PageTitle />
-        <AddWeight />
-      </div>
+		<div>
+			<PageTitle />
+			<AddWeight />
+		</div>
     );
 };
 

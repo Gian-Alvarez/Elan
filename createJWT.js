@@ -3,14 +3,14 @@ require("dotenv").config();
 
 exports.createToken = function ( fn, ln, id )
 {
-    return _createToken( fn, ln, id );
+	return _createToken( fn, ln, id );
 }
 
 _createToken = function ( fn, ln, id )
 {
-    try
+	try
     {
-        const expiration = new Date();
+      	const expiration = new Date();
         const user = {userId:id,firstName:fn,lastName:ln};
 
         const accessToken =  jwt.sign( user, process.env.ACCESS_TOKEN_SECRET);
@@ -22,37 +22,39 @@ _createToken = function ( fn, ln, id )
                         '24h'
                         '365d'
         */
-
-        let ret = {accessToken:accessToken, fn:fn, ln:ln, id:id};   
+		console.log('Do I Work');
+        var ret = {accessToken:accessToken, fn:fn, ln:ln, id:id}; 
     }
     catch(e)
     {
-        let ret = {error:e.message};
+        var ret = {error:e.message};
     }
+	console.log(ret);  
     return ret;
 }
 
 exports.isExpired = function( token )
 {
-   var isError = jwt.verify( token, process.env.ACCESS_TOKEN_SECRET, 
-     (err, verifiedJwt) =>
-   {
-     if( err )
-     {
-       return true;
-     }
-     else
-     {
-       return false;
-     }
-   });
-   return isError;
+	var isError = jwt.verify( token, process.env.ACCESS_TOKEN_SECRET, 
+    	(err, verifiedJwt) =>
+		{
+			if( err )
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		});
+   	return isError;
 }
+
 exports.refresh = function( token )
 {
-  let ud = jwt.decode(token,{complete:true});
-  let userId = ud.payload.id;
-  let firstName = ud.payload.firstName;
-  let lastName = ud.payload.lastName;
-  return _createToken( firstName, lastName, userId );
+  	let ud = jwt.decode(token,{complete:true});
+  	let userId = ud.payload.userId;
+  	let firstName = ud.payload.firstName;
+  	let lastName = ud.payload.lastName;
+  	return _createToken( firstName, lastName, userId );
 }

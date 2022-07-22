@@ -1,63 +1,92 @@
-import React, { useDebugValue, useState } from 'react';
+import React, {useDebugValue, useState} from 'react';
+import axios from 'axios';
 
 function Login()
 {
-  var login;
-  var password;
+	var storage = require('../tokenStorage.js');
+	let bp = require('./Path.js');
 
-  const [message,setMessage] = useState('');
+	var login;
+	var password;
+	const [message, setMessage] = useState('');
 
-  let bp = require('./Path.js');
+	const doLogin = async event => 
+	{
+		event.preventDefault();
 
-  const doLogin = async event => 
-  {
-      event.preventDefault();
+		let obj = {login:login.value,password:password.value};
+		let js = JSON.stringify(obj);
 
-      let obj = {login:login.value,password:password.value};
-      let js = JSON.stringify(obj);
+		var config = 
+        {
+        	method: 'post',
+            url: bp.buildPath('api/login'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+		axios(config).then(function (response) 
+        {
+            var res = response.data;
 
-      try
-      {    
-          const response = await fetch(bp.buildPath('api/login'),
-              {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
+            if (res.error) 
+            {
+                setMessage('User/Password combination incorrect');
+            }
+            else 
+            {	
+				if(res.ev == 0)
+				{
+					setMessage('Please verify email');
+				}
+				else
+				{
+					storage.storeToken(res.token);
+					var jwt = require('jsonwebtoken');
+		
+					var ud = jwt.decode(storage.retrieveToken(),{complete:true});
+					var userId = ud.payload.userId;
+					var firstName = ud.payload.firstName;
+					var lastName = ud.payload.lastName;
+					
+					let user = {firstName:firstName,lastName:lastName,id:userId}
+					localStorage.setItem('user_data', JSON.stringify(user));
 
-          let res = JSON.parse(await response.text());
+					setMessage('');
 
-          if( res.id <= 0 )
-          {
-              setMessage('User/Password combination incorrect');
-          }
-          else
-          {
-              let user = {firstName:res.firstName,lastName:res.lastName,id:res.id}
-              localStorage.setItem('user_data', JSON.stringify(user));
+					if(res.ftl == 0)
+					{
+						window.location.href = '/ftLogin';
+					}
+					else
+					{
+						window.location.href = '/cards';
+					}
+				}
+            }
+        })
+        .catch(function (error) 
+        {
+            console.log(error);
+        });  
+	};
 
-              setMessage('');
-              window.location.href = '/cards';
-          }
-      }
-      catch(e)
-      {
-          alert(e.toString());
-          return;
-      }    
-  };
-
-
-    return(
-      <div id="loginDiv">
-        <form onSubmit={doLogin}>
-        <span id="inner-title">PLEASE LOG IN</span><br />
-        <input type="text" id="login" placeholder="Login" 
-          ref={(c) => login = c} /> <br />
-        <input type="password" id="loginPassword" placeholder="Password" 
-          ref={(c) => password = c} /> <br />
-        <input type="submit" id="loginButton" class="buttons" value = "Do It"
-          onClick={doLogin} />
-        </form>
-        <span id="loginResult">{message}</span>
-     </div>
-    );
+	return (
+		<div id="loginDiv">
+			<form onSubmit={doLogin}>
+			<span id="inner-title">PLEASE LOG IN</span><br />
+			<input type="text" id="login" placeholder="Login" 
+				ref={(c) => login = c} /> <br />
+			<input type="password" id="password" placeholder="Password" 
+				ref={(c) => password = c} /> <br />
+			<input type="submit" id="loginButton" class="buttons" value = "Do It"
+				onClick={doLogin} />
+			</form>
+			<span id="loginResult">{message}</span>
+		</div>
+	);
 };
 
 export default Login;

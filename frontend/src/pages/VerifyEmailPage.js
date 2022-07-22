@@ -1,16 +1,16 @@
 import React from 'react';
 
 import PageTitle from '../components/PageTitle';
-import Login from '../components/Login';
+import VerifyEmail from '../components/VerifyEmail';
 
-const LoginPage = () =>
+const VerifyEmailPage = () =>
 {
 	return(
 		<div>
 			<PageTitle />
-			<Login />
+			<VerifyEmail />
 		</div>
 	);
 };
 
-export default LoginPage;
+export default VerifyEmailPage;
