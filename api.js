@@ -114,6 +114,7 @@ exports.setApp = function ( app, client )
             ret = {error:e.message};
         }
 
+        console.log(tok.accessToken);
         const newUser = User({Username:username, Password:password, First_Name:firstName, Last_Name:lastName, Email:email, First_Time_Login:firstTimeLogin, Email_Verify:emailVerify, Email_Token: tok.accessToken});
 
         try
