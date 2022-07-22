@@ -44,6 +44,7 @@ const UserSchema = new Schema({
 		required: true
 	},
 	Email_Token: {
+		type: String,
 		required: true
 	}
 }, {collection: 'Users'});
