@@ -19,7 +19,6 @@ function CardUI()
     
     // New
     var storage = require('../tokenStorage.js');
-    const jwt = require("jsonwebtoken");
 
     const addCard = async event => 
     {
