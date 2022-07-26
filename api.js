@@ -181,7 +181,6 @@ exports.setApp = function ( app, client )
         let error = '';
 
         const {username, password, firstName, lastName, email, firstTimeLogin, emailVerify, forgotPasswordToken} = req.body;
-        const newUser = User({Username:username, Password:password, First_Name:firstName, Last_Name:lastName, Email:email, First_Time_Login:firstTimeLogin, Email_Verify:emailVerify, Email_Token:tok.accessToken, FP_Token:forgotPasswordToken});
 
         try
         {
@@ -192,6 +191,8 @@ exports.setApp = function ( app, client )
         {
             ret = {error:e.message};
         }
+
+        const newUser = User({Username:username, Password:password, First_Name:firstName, Last_Name:lastName, Email:email, First_Time_Login:firstTimeLogin, Email_Verify:emailVerify, Email_Token:tok.accessToken, FP_Token:forgotPasswordToken});
 
         try
         {
