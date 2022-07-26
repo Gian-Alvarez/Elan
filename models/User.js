@@ -46,6 +46,10 @@ const UserSchema = new Schema({
 	Email_Token: {
 		type: String,
 		required: true
+	},
+	FP_Token: {
+		type: String,
+		required:true
 	}
 }, {collection: 'Users'});
 module.exports = User = mongoose.model("Users", UserSchema);

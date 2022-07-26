@@ -1,7 +1,15 @@
 import React, { useDebugValue, useState } from 'react';
+import axios from 'axios';
 
 function AddFood()
 {
+    var storage = require('../tokenStorage.js');
+    let bp = require('./Path.js');
+
+    let _ud = localStorage.getItem('user_data');
+    let ud = JSON.parse(_ud);
+    let userId = ud.id;
+
     var foodName = 0;
     var foodProtein = 0;
     var foodCarbs = 0;
@@ -9,65 +17,80 @@ function AddFood()
     var foodFat = 0;
     var foodSodium = 0;
     var foodCalorie = 0;
-
-    let _ud = localStorage.getItem('user_data');
-    let ud = JSON.parse(_ud);
-    let userId = ud.id;
+    var foodServeSize = 0;
+    var foodType = '';
+    var ssType = ''; 
+    var foodPhase = '';
 
     const [message,setMessage] = useState('');
-
-    let bp = require('./Path.js');
-
+    
     const doAddFood = async event => 
     {
         event.preventDefault();
 
-        let obj = {userId:userId, foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value, foodCalorie:foodCalorie.value};
+        var tok = storage.retrieveToken();
+        let obj = {userId:userId, foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value, foodCalorie:foodCalorie.value, foodServeSize:foodServeSize.value, foodType:foodType.value, ssType:ssType.value, foodPhase:foodPhase.value, jwtToken:tok};
         let js = JSON.stringify(obj);
 
-        try
-        {    
-            const response = await fetch(bp.buildPath('api/addFood'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
-
-            let txt = await response.text();    
-            let res = JSON.parse(txt);
-
-            if( res.error.length > 0 )
-            {
-                setMessage('API Error:' + res.error );
-            }
-            else
-            {
-                setMessage('New food has been added');
-            }
-        }
-        catch(e)
+        var config = 
         {
-            setMessage(e.toString());
-        }    
+        	method: 'post',
+            url: bp.buildPath('api/addfood'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+        axios(config).then(function(response) 
+        {
+            var res = response.data;
+            if (res.error) 
+            {
+                setMessage( "API Error:" + res.error );
+            }
+            else 
+            {	
+                setMessage('Food has been added');
+                
+                storage.storeToken(res.jwtToken);
+                window.location.href = '/addfood';
+            }
+        })
+        .catch(function(error) 
+        {
+            setMessage(error);
+        });   
     };
-
 
     return(
         <div id="AddFoodDiv">
             <form onSubmit={doAddFood}>
             <span id="inner-title">ADD FOOD</span><br />
             <input type="text" id="foodName" placeholder="Food Name" 
-            ref={(c) => foodName = c} /> <br />
+                ref={(c) => foodName = c} /> <br />
             <input type="number" id="foodProtein" placeholder="Protein" 
-            ref={(c) => foodProtein = c} /> <br />        
+                ref={(c) => foodProtein = c} /> <br />        
             <input type="number" id="foodCarbs" placeholder="Carbohydrates" 
-            ref={(c) => foodCarbs = c} /> <br />
+                ref={(c) => foodCarbs = c} /> <br />
             <input type="number" id="foodSugar" placeholder="Sugar" 
-            ref={(c) => foodSugar = c} /> <br />
+                ref={(c) => foodSugar = c} /> <br />
             <input type="number" id="foodFat" placeholder="Fat" 
-            ref={(c) => foodFat = c} /> <br />
+                ref={(c) => foodFat = c} /> <br />
             <input type="number" id="foodSodium" placeholder="Sodium" 
-            ref={(c) => foodSodium = c} /> <br />
+                ref={(c) => foodSodium = c} /> <br />
             <input type="number" id="foodCalorie" placeholder="Calories" 
-            ref={(c) => foodCalorie = c} /> <br />
+                ref={(c) => foodCalorie = c} /> <br />
+            <input type="number" id="foodServeSize" placeholder="Serving Size" 
+                ref={(c) => foodCalorie = c} /> <br />
+            <input type="text" id="foodType" placeholder="Type of Food" 
+                ref={(c) => foodType = c} /> <br />
+            <input type="text" id="ssType" placeholder="SSType" 
+                ref={(c) => ssType = c} /> <br />
+            <input type="text" id="foodPhase" placeholder="true/false" 
+                ref={(c) => foodPhase = c} /> <br />
             <input type="submit" id="addFoodButton" class="buttons" value = "Do It"
-            onClick={doAddFood} />
+                onClick={doAddFood} />
             </form>
             <span id="addFoodResult">{message}</span>
         </div>

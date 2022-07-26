@@ -1,47 +1,58 @@
 import React, { useDebugValue, useState } from 'react';
+import axios from 'axios';
 
 function AddWeight()
 {
-    var date = '';
-    var weight = 0;
-
-    const [message,setMessage] = useState('');
+    var storage = require('../tokenStorage.js');
+    let bp = require('./Path.js');
 
     let _ud = localStorage.getItem('user_data');
     let ud = JSON.parse(_ud);
     let userId = ud.id;
 
-    let bp = require('./Path.js');
-
+    var date = '';
+    var weight = 0;
+ 
+    const [message,setMessage] = useState('');
+ 
     const doAddWeight = async event => 
     {
         event.preventDefault();
 
-        let obj = {date:date.value, weight:weight.value, userId:userId};
+        var tok = storage.retrieveToken();
+        let obj = {date:date.value, weight:weight.value, userId:userId, jwtToken:tok};
         let js = JSON.stringify(obj);
 
-        try
-        {    
-            const response = await fetch(bp.buildPath('api/addWeight'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
-
-            let txt = await response.text();    
-            let res = JSON.parse(txt);
-
-            if( res.error.length > 0 )
-            {
-                setMessage('API Error:' + res.error );
-            }
-            else
-            {
-                setMessage('Weight has been added');
-            }
-        }
-        catch(e)
+        var config = 
         {
-            setMessage(e.toString());
-        }    
+        	method: 'post',
+            url: bp.buildPath('api/addweight'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+        axios(config).then(function(response) 
+        {
+            var res = response.data;
+            if (res.error) 
+            {
+                setMessage( "API Error:" + res.error );
+            }
+            else 
+            {	
+                setMessage('Food has been added');
+                
+                storage.storeToken(res.jwtToken);
+                window.location.href = '/addweight';
+            }
+        })
+        .catch(function(error) 
+        {
+            setMessage(error);
+        });    
     };
-
 
     return(
         <div id="AddWeightDiv">

@@ -1,8 +1,8 @@
-import React, { useDebugValue, useState } from 'react';
+import React, {useState} from 'react';
+import axios from 'axios';
 
 function Register()
 {
-    var storage = require('../tokenStorage.js');
     let bp = require('./Path.js');
 
     var username = '';
@@ -16,31 +16,37 @@ function Register()
     {
         event.preventDefault();
 
-        let obj = {username:username.value, password:password.value, firstName:firstName.value, lastName:lastName.value, email:email.value, firstTimeLogin:0, emailVerify:0};
+        let obj = {username:username.value, password:password.value, firstName:firstName.value, lastName:lastName.value, email:email.value, firstTimeLogin:0, emailVerify:0, forgotPasswordToken:"0"};
         let js = JSON.stringify(obj);
 
-        try
-        {    
-            const response = await fetch(bp.buildPath('api/register'), {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
+        var config = 
+        {
+        	method: 'post',
+            url: bp.buildPath('api/register'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+		axios(config).then(function (response) 
+        {
+            var res = response.data;
 
-            let txt = await response.text();    
-            let res = JSON.parse(txt);
-
-            if( res.error.length > 0 )
+            if (res.error) 
             {
                 setMessage('API Error:' + res.error );
             }
-            else
-            {
-                storage.storeToken(res.token);
-                setMessage('New User has been added');
+            else 
+            {	
+				setMessage('User Registered');
                 window.location.href = '/'
             }
-        }
-        catch(e)
+        })
+        .catch(function (error) 
         {
-            setMessage(e.toString());
-        }    
+            console.log(error);
+        });  
     };
 
     return(

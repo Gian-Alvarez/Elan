@@ -1,46 +1,43 @@
-import React, {useDebugValue, useState} from 'react';
-import {useLocation} from 'react-router-dom'
+import React, {useState} from 'react';
 import axios from 'axios';
 
-function VerifyEmail()
+function ForgotPassword()
 {
 	let bp = require('./Path.js');
 
-	const search = useLocation().search;
-	const ahjst = new URLSearchParams(search).get('ahjst');
-
+    var email = '';
 	const [message, setMessage] = useState('');
 
-	const doVerifyEmail = async event => 
+	const doForgotPassword = async event => 
 	{
 		event.preventDefault();
 
-		let obj = {ahjst:ahjst};
+		let obj = {email:email.value};
 		let js = JSON.stringify(obj);
 
 		var config = 
         {
         	method: 'post',
-            url: bp.buildPath('api/verifyemail'),	
+            url: bp.buildPath('api/forgotpassword'),	
             headers: 
             {
                 'Content-Type': 'application/json'
             },
             data: js
         };
-
 		axios(config).then(function (response) 
         {
             var res = response.data;
 
             if (res.error) 
             {
-                setMessage('User/Password combination incorrect');
+                setMessage('Email Sent');
             }
             else 
             {	
 				setMessage('Click to Login');
-			}
+			
+            }
         })
         .catch(function (error) 
         {
@@ -49,15 +46,17 @@ function VerifyEmail()
 	};
 
 	return (
-		<div id="verifyEmailDiv">
-			<form onSubmit={doVerifyEmail}>
-			<span id="inner-title">PLEASE VERIFY EMAIL</span><br />
-			<input type="submit" id="verifyEmailButton" class="buttons" value = "Do It"
-				onClick={doVerifyEmail} />
+		<div id="forgotPasswordDiv">
+			<form onSubmit={doForgotPassword}>
+			<span id="inner-title">PLEASE ENTER THE NEEDED INFORMATION</span><br />
+            <input type="text" id="email" placeholder="Email" 
+				ref={(c) => email = c} /> <br />
+			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Do It"
+				onClick={doForgotPassword} />
 			</form>
-			<span id="verifyEmailResult">{message}</span>
+			<span id="forgotPasswordResult">{message}</span>
 		</div>
 	);
 };
 
-export default VerifyEmail;
+export default ForgotPassword;

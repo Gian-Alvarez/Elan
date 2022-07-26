@@ -10,6 +10,8 @@ import FTLoginPage from './pages/FTLoginPage';
 import AddFoodPage from './pages/AddFoodPage';
 import AddWeightPage from './pages/AddWeightPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
 return (
@@ -22,6 +24,8 @@ return (
 			<Route path="/addWeight" index element={<AddWeightPage />} />
 			<Route path="/ftLogin" index element={<FTLoginPage />} />
 			<Route path="/verifyemail" index element={<VerifyEmailPage />} />
+			<Route path="/forgotpassword" index element={<ForgotPasswordPage />} />
+			<Route path="/resetpassword" index element={<ResetPasswordPage />} />
 		</Routes>
 	</BrowserRouter>
 );

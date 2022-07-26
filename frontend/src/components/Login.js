@@ -1,4 +1,4 @@
-import React, {useDebugValue, useState} from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 
 function Login()
@@ -14,7 +14,7 @@ function Login()
 	{
 		event.preventDefault();
 
-		let obj = {login:login.value,password:password.value};
+		let obj = {login:login.value, password:password.value};
 		let js = JSON.stringify(obj);
 
 		var config = 
@@ -37,7 +37,7 @@ function Login()
             }
             else 
             {	
-				if(res.ev == 0)
+				if(res.ev === 0)
 				{
 					setMessage('Please verify email');
 				}
@@ -56,7 +56,7 @@ function Login()
 
 					setMessage('');
 
-					if(res.ftl == 0)
+					if(res.ftl === 0)
 					{
 						window.location.href = '/ftLogin';
 					}
@@ -73,6 +73,11 @@ function Login()
         });  
 	};
 
+	const doFPRedirect = async event =>
+	{
+		window.location.href = '/forgotpassword';
+	}
+
 	return (
 		<div id="loginDiv">
 			<form onSubmit={doLogin}>
@@ -83,6 +88,8 @@ function Login()
 				ref={(c) => password = c} /> <br />
 			<input type="submit" id="loginButton" class="buttons" value = "Do It"
 				onClick={doLogin} />
+			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Forgot password"
+				onClick={doFPRedirect} />
 			</form>
 			<span id="loginResult">{message}</span>
 		</div>
