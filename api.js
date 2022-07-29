@@ -10,14 +10,11 @@ const Health = require("./models/Health.js");
 const Diary = require("./models/Diary.js");
 
 exports.setApp = function ( app, client )
-{
+{   //
     app.post('/api/login', async (req, res, next) => 
     {
         // incoming: Login, Password.
         // outgoing: UserId, First_Name, Last_Name, First_Time_Login, Email_Verify, Error.
-
-        const {login, password} = req.body;
-        const results = await User.find({$or:[{Username: login}, {Email:login}], Password: password});
 
         let id = -1;
         let fn = '';
@@ -25,6 +22,9 @@ exports.setApp = function ( app, client )
         let ev = -1;
         let ftl = -1;
         var ret;
+
+        const {login, password} = req.body;
+        const results = await User.find({$or:[{Username: login}, {Email:login}], Password: password});
 
         if( results.length > 0 )
         {
@@ -55,15 +55,15 @@ exports.setApp = function ( app, client )
 
     app.post('/api/ftlogin', async (req, res, next) => 
     {
-        // incoming: Login, Password.
+        // incoming: UserID, Activity Level, Height, Age, Goal Weight, Starting Weight, Daily Calorie Goal.
         // outgoing: UserId, First_Name, Last_Name, First_Time_Login, Email_Verify, Error.
 
         let token = require('./createJWT.js');
 
         let error = '';
 
-        const {userId, jwtToken} = req.body;
-        
+        const {userId, activityLevel, height, age, goalWeight, startWeight, calorieGoal, jwtToken} = req.body;
+       
         try
         {
             if(token.isExpired(jwtToken))
@@ -77,9 +77,23 @@ exports.setApp = function ( app, client )
         {
             console.log(e.message);
         }
-
+        
         const results = await User.findByIdAndUpdate(userId, {First_Time_Login:1});
+    
+        const newHealth = Health({UserID:userId, Weight:[{Weight:startWeight}], Curr_Weight:startWeight, Activity_Level:activityLevel, Height:height, Age:age, Goal_Weight:goalWeight, Calorie_Goal:calorieGoal});
+        const newDiary = Diary({UserID:userId});
 
+        try
+        {
+            newHealth.save();
+            newDiary.save();
+        }
+        catch(e)
+        {
+            error = e.toString();
+        }
+
+        
         var refreshedToken = null;
         try
         {
@@ -90,11 +104,11 @@ exports.setApp = function ( app, client )
         {
             console.log(e.message);
         }
-        
+              
         var ret = {error: error, jwtToken: refreshedToken};
         res.status(200).json(ret);
     });
-
+    //
     app.post('/api/forgotpassword', async (req, res, next) =>
     {
         // incoming: Email.
@@ -147,7 +161,7 @@ exports.setApp = function ( app, client )
         let ret = {error:error};
         res.status(200).json(ret);
     });
-
+    //
     app.post('/api/resetpassword', async(req, res, next) =>
     {
         // incoming: JWTToken, Password.
@@ -171,8 +185,32 @@ exports.setApp = function ( app, client )
         let ret = {error:error};
         res.status(200).json(ret);
     });
+    //
+    app.post('/api/verifyemail', async(req, res, next) =>
+    {
+        // incoming: JWTToken.
+        // outgoing: Error.
+
+        let error = '';
+
+        const {ahjst} = req.body;
+
+        try{
+            let userEmail = {Email_Token:ahjst};
+            const result = await User.findOneAndUpdate(userEmail, {Email_Verify:1});
+            const result2 = await User.findOneAndUpdate(userEmail, {Email_Token:"0"});
+        }
+        catch(e)
+        {
+            error = e.toString();
+        }
+
+        let ret = {error:error};
+        res.status(200).json(ret);
+    });
 
 
+    //
     app.post('/api/register', async (req, res, next) =>
     {
         // incoming: Username, Password, First_Name, Last_Name, Email.
@@ -193,7 +231,7 @@ exports.setApp = function ( app, client )
         }
 
         const newUser = User({Username:username, Password:password, First_Name:firstName, Last_Name:lastName, Email:email, First_Time_Login:firstTimeLogin, Email_Verify:emailVerify, Email_Token:tok.accessToken, FP_Token:forgotPasswordToken});
-
+        
         try
         {
             newUser.save();
@@ -229,32 +267,707 @@ exports.setApp = function ( app, client )
         let ret = {error:error};
         res.status(200).json(ret);
     });
-
-    app.post('/api/verifyemail', async(req, res, next) =>
+    //
+    app.post('/api/edituser', async(req, res, next) =>
     {
-        // incoming: JWTToken.
+        // incoming: Username, Password, First Name, Last Name, Email.
         // outgoing: Error.
+       
+        let token = require('./createJWT.js');
 
         let error = '';
 
-        const {ahjst} = req.body;
+        const {userId, username, password, firstName, lastName, email, jwtToken} = req.body;
 
-        try{
-            let userEmail = {Email_Token:ahjst};
-            const result = await User.findOneAndUpdate(userEmail, {Email_Verify:1});
-            const result2 = await User.findOneAndUpdate(userEmail, {Email_Token:"0"});
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        let userInformation = {Username:username, Password: password, First_Name:firstName, Last_Name:lastName, Email:email};
+        const results = await User.findByIdAndUpdate(userId, userInformation);
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+            console.log(refreshedToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getuser', async(req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Username, Password, First Name, Last Name, Email.
+        
+        let token = require('./createJWT.js');
+
+        let username = '';
+        let password = '';
+        let firstName = '';
+        let lastName = '';
+        let email = '';
+        let error = '';
+
+        const {userId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+    
+        const results = await User.find({_id:userId});
+
+        if( results.length > 0 )
+        {
+            username = results[0].Username;
+            password = results[0].Password;
+            firstName = results[0].First_Name;
+            lastName = results[0].Last_Name;
+            email = results[0].Email;
+        }
+        
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+            console.log(refreshedToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        var ret = {error:error, username:username, password:password, firstName:firstName, lastName:lastName, email:email, jwtToken:refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getHealth', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Height, Goal Weight, Calorie Goal, Age.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let height = 0;
+        let goalWeight = 0;
+        let goalCalories = 0;
+        let age = 0;
+        var ret;
+
+        const {userId, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Health.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            height = results[0].Height;
+            goalWeight = results[0].Goal_Weight;
+            goalCalories = results[0].Calorie_Goal;
+            age = results[0].Age;
+        }
+        else
+        {
+            ret = {error:"Cannot Retrieve Health Info"};
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error: error, height:height, goalWeight:goalWeight, goalCalories:goalCalories, age:age, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/editHealth', async(req, res, next) =>
+    {
+        // incoming: Username, Password, First Name, Last Name, Email.
+        // outgoing: Error.
+        let token = require('./createJWT.js');
+
+        let error = '';
+
+        const {userId, height, goalWeight, goalCalories, age, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        let healthInformation = {Height:height, Goal_Weight:goalWeight, Calorie_Goal:goalCalories, Age:age};
+        const results = await Health.findOneAndUpdate({UserID:userId}, healthInformation);
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+            console.log(refreshedToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+
+
+    //
+    app.post('/api/addWeight', async (req, res, next) =>
+    {
+        // incoming: UserID, Weight, Date.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        
+        const {date, weight, userId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        const results = await Health.findOneAndUpdate({UserID:userId}, {$push: {Weight: {Weight:weight, Date:date}}});
+        const results2 = await Health.findOneAndUpdate({UserID:userId}, {Curr_Weight:weight});
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+                
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getTenWeight', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let weights;
+        
+        const {userId, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Health.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            weights = results[0].Weight.slice(-1);
+        }
+        
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+              
+        var ret = {weights:weights, error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getAllWeight', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let weights;
+        
+        const {userId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        const results = await Health.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            weights = results[0].Weight;
+        }
+        
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+              
+        var ret = {weights:weights, error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getCurrWeight', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Current Weight, Goal Weight, Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let currentW = 0;
+        let goalW = 0;
+        
+        const {userId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Health.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            currentW = results[0].Curr_Weight;
+            goalW = results[0].Goal_Weight;
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+                
+        var ret = {currentW:currentW, goalW:goalW, error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+
+
+    app.post('/api/getCalories', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let goal = 0;
+        let todaysCalories = 0;
+        
+        const {userId, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Health.find({UserID:userId});
+        if( results.length > 0 )
+        {
+            goal = results[0].Calorie_Goal;
+        }
+        
+        const results2 = await Diary.find({UserID:userId});
+        if( results.length > 0 )
+        {
+            todaysCalories = results2[0].Diet[-1].Total_Calories;
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+              
+        var ret = {weights:weights, error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+
+    //
+    app.post('/api/addFood', async (req, res, next) =>
+    {
+        // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+
+        const {userId, foodName, foodProtein, foodCarbs, foodSugar, foodFat, foodSodium, foodCalorie, foodServeSize, foodType, ssType, foodPhase, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const newFood = Food({UserID:userId, Name:foodName, Protein:foodProtein, Carbohydrates:foodCarbs, Sugar:foodSugar, Fat:foodFat, Sodium:foodSodium, Calories:foodCalorie, Food_Type:foodType, Serving_Size:foodServeSize, SS_Type:ssType, Phase:foodPhase});
+
+        try
+        {
+            newFood.save();
         }
         catch(e)
         {
             error = e.toString();
         }
 
-        let ret = {error:error};
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getFood', async (req, res, next) =>
+    {
+        // incoming: Name, FoodID.
+        // outgoing: Food Name, Calories.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let foodId = '';
+        var ret;
+        
+        const {userId, foodName, jwtToken} = req.body;
+
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Food.find({UserID:userId, Name:foodName});
+
+        if( results.length > 0 )
+        {
+            foodId = results[0]._id.toString();
+        }
+        else
+        {
+            ret = {error:"Food Doesn't Exist"};
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error:error, foodId:foodId, jwtToken:refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getAllFood', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Foods.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let foods;
+        var ret;
+
+        const {userId, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Food.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            foods = results[0]
+        }
+        else
+        {
+            ret = {error:"Food Doesn't Exist"};
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error:error, foods:foods, jwtToken:refreshedToken};
         res.status(200).json(ret);
     });
 
 
-    app.post('/api/addFood', async (req, res, next) =>
+    app.post('/api/createMeal', async (req, res, next) =>
+    {
+        // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+
+        const {userId, mealName, foodArray,} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        const newMeal = Meal({UserID:userId, Name:mealName, Foods:foodArray});
+
+        try
+        {
+            newMeal.save();
+        }
+        catch(e)
+        {
+            error = e.toString();
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+
+    app.post('/api/getAllMeals', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Meals.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let meals;
+        var ret;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const {userId} = req.body;
+        const results = await Meal.find({UserID:userId});
+
+        if( results.length > 0 )
+        {
+            meals = results[0]
+        }
+        else
+        {
+            ret = {error:"Meal Doesn't Exist"};
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error:error, meals:meals, jwtToken:refreshedToken};
+        res.status(200).json(ret);
+    });
+
+    /*
+    app.post('/api/getFood', async (req, res, next) =>
     {
         // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
         // outgoing: Error.
@@ -302,55 +1015,13 @@ exports.setApp = function ( app, client )
         var ret = {error: error, jwtToken: refreshedToken};
         res.status(200).json(ret);
     });
+    */
 
-    app.post('/api/addWeight', async (req, res, next) =>
-    {
-        // incoming: UserID, Weight, Date.
-        // outgoing: Error.
 
-        let token = require('./createJWT.js');
+    
 
-        let error = '';
-        
-        const {date, weight, userId, jwtToken} = req.body;
-        const newWeight = Weight({UserID:userId, Date:date, Weight:weight});
 
-        try
-        {
-            if(token.isExpired(jwtToken))
-            {
-                var r = {error:'The JWT is no longer valid', jwtToken: ''};
-                res.status(200).json(r);
-                return;
-            }
-        }
-        catch(e)
-        {
-            console.log(e.message);
-        }
-
-        try
-        {
-            newWeight.save();
-        }
-        catch(e)
-        {
-            error = e.toString();
-        }
-
-        var refreshedToken = null;
-        try
-        {
-            refreshedToken = token.refresh(jwtToken);
-        }
-        catch(e)
-        {
-            console.log(e.message);
-        }
-        
-        var ret = {error: error, jwtToken: refreshedToken};
-        res.status(200).json(ret);
-    });
+    
 
 
 

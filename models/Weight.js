@@ -3,9 +3,6 @@ const Schema = mongoose.Schema;
 
 const WeightSchema = new Schema(
 {
-    UserID: {
-        type: String
-    },
     Curr_Weight: {
         type: Number
     },

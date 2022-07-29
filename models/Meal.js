@@ -10,12 +10,10 @@ const MealsSchema = new Schema({
         type: String,
         required: true
     },
-    Description: {
-        type: String
-    },
     Foods: [{
-        type: Schema.Types.ObjectID, 
-        ref : "Food"
+        FoodIDs: {
+            type: String
+        }
     }]
 }, {collection: 'Meals'});
 module.exports = Meal = mongoose.model("Meals", MealsSchema);

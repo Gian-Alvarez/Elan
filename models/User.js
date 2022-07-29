@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-//Create Schema
+
 const UserSchema = new Schema({
 	Username: {
 		type: String,
@@ -22,10 +22,6 @@ const UserSchema = new Schema({
 		type: String,
 		required: true,
 		unique: true
-	},
-	Health: {
-		type: Schema.Types.ObjectId,
-		ref: "Health"
 	},
 	History: [{
 		type: Schema.Types.ObjectId, 

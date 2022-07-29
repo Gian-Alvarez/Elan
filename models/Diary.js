@@ -1,23 +1,27 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const DiarySchema = new Schema(
-{
-    Breakfast: {
-        type: Schema.Types.ObjectID, 
-        ref: "Food"
-    },
-    Lunch: {
-        type: Schema.Types.ObjectID,
-        ref: "Food"
-    },
-    Dinner: {
-        type : Schema.Types.ObjectID, 
-        ref : "Food"
-    },
+const DietSchema = new Schema({
     Date: {
-        type : Date, 
-        default : Date.now
-    }
+        type: Date, 
+        default: Date.now
+    },
+    Total_Calories:{
+        type: Number
+    },
+    Meals: [{
+        MealID: {
+            type: String
+        }
+    }]
+})
+
+const DiarySchema = new Schema({
+    UserID: {
+        type: String
+    },
+    Diet: [
+        DietSchema
+    ]
 }, {collection: 'Diary'});
 module.exports = Diary = mongoose.model("Diary", DiarySchema);
