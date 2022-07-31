@@ -62,7 +62,7 @@ function Login()
 					}
 					else
 					{
-						window.location.href = '/cards';
+						window.location.href = '/home';
 					}
 				}
             }
@@ -73,25 +73,24 @@ function Login()
         });  
 	};
 
-	const doFPRedirect = async event =>
-	{
-		window.location.href = '/forgotpassword';
-	}
-
 	return (
 		<div id="loginDiv">
 			<form onSubmit={doLogin}>
-			<span id="inner-title">PLEASE LOG IN</span><br />
+			<span id="inner-title">Please Log In</span><br />
 			<input type="text" id="login" placeholder="Login" 
 				ref={(c) => login = c} /> <br />
 			<input type="password" id="password" placeholder="Password" 
 				ref={(c) => password = c} /> <br />
-			<input type="submit" id="loginButton" class="buttons" value = "Do It"
+			<input type="submit" id="loginButton" class="buttons" value = "Login"
 				onClick={doLogin} />
-			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Forgot password"
-				onClick={doFPRedirect} />
-			</form>
 			<span id="loginResult">{message}</span>
+			</form>
+			<form action = "/forgotpassword">
+			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Forgot Password"/>
+			</form>
+			<form action = "/register">
+			<input type="submit" id="registerRedirectButton" class="buttons" value = "Register"/>
+			</form>
 		</div>
 	);
 };

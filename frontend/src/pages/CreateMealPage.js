@@ -1,16 +1,15 @@
 import React from 'react';
 
 import PageTitle from '../components/PageTitle';
-import AddWeight from '../components/AddWeight';
+//import AddWeight from '../components/AddWeight';
 
-const AddWeightPage = () =>
+const CreateMealPage = () =>
 {
     return(
 		<div>
 			<PageTitle />
-			<AddWeight />
 		</div>
     );
 };
 
-export default AddWeightPage;
+export default CreateMealPage;

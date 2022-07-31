@@ -29,7 +29,7 @@ const HealthSchema = new Schema({
         type: Number
     },
     Height: {
-        type: Number
+        type: String
     },
     Age: {
         type:Number

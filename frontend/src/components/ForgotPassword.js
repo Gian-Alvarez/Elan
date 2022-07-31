@@ -35,7 +35,7 @@ function ForgotPassword()
             }
             else 
             {	
-				setMessage('Click to Login');
+				setMessage('Please Check Email');
 			
             }
         })
@@ -48,13 +48,16 @@ function ForgotPassword()
 	return (
 		<div id="forgotPasswordDiv">
 			<form onSubmit={doForgotPassword}>
-			<span id="inner-title">PLEASE ENTER THE NEEDED INFORMATION</span><br />
-            <input type="text" id="email" placeholder="Email" 
+			<span id="inner-title">Please Enter the Accounts Email</span><br />
+            <input type="text" id="email" placeholder="Email..." 
 				ref={(c) => email = c} /> <br />
-			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Do It"
+			<input type="submit" id="forgotPasswordButton" class="buttons" value = "Submit"
 				onClick={doForgotPassword} />
-			</form>
 			<span id="forgotPasswordResult">{message}</span>
+			</form>
+			<form action = "/">
+			<input type="submit" id="loginRedirectButton" class="buttons" value = "Go to Login"/>
+			</form>
 		</div>
 	);
 };

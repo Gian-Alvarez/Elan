@@ -52,11 +52,15 @@ function ResetPassword()
     return (
 		<div id="resetPasswordDiv">
 			<form onSubmit={doResetPassword}>
-			<span id="inner-title">TYPE IN NEW PASSWORD</span><br />
+			<span id="inner-title">Type In New Password</span><br />
             <input type="text" id="password" placeholder="New Password" 
 				ref={(c) => password = c} /> <br />
-			<input type="submit" id="resetPasswordButton" class="buttons" value = "Do It"
+			<input type="submit" id="resetPasswordButton" class="buttons" value = "Reset Password"
 				onClick={doResetPassword} />
+			<span id="loginResult">{message}</span>
+            </form>
+            <form action = "/">
+			<input type="submit" id="loginRedirectButton" class="buttons" value = "Go to Login"/>
 			</form>
 			<span id="loginResult">{message}</span>
 		</div>

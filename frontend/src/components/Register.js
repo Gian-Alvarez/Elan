@@ -52,21 +52,24 @@ function Register()
     return(
         <div id="RegisterDiv">
             <form onSubmit={doRegister}>
-            <span id="inner-title">REGISTER</span><br />
-            <input type="text" id="username" placeholder="Username" 
-            ref={(c) => username = c} /> <br />
-            <input type="password" id="password" placeholder="Password" 
-            ref={(c) => password = c} /> <br />        
-            <input type="text" id="firstName" placeholder="First Name" 
-            ref={(c) => firstName = c} /> <br />
-            <input type="text" id="lastName" placeholder="Last Name" 
-            ref={(c) => lastName = c} /> <br />
-            <input type="text" id="email" placeholder="Email" 
-            ref={(c) => email = c} /> <br />
-            <input type="submit" id="registerButton" class="buttons" value = "Do It"
-            onClick={doRegister} />
-            </form>
+            <span id="inner-title">Register</span><br />
+            <input type="text" id="username" placeholder="Username..." 
+                ref={(c) => username = c} /> <br />
+            <input type="password" id="password" placeholder="Password..." 
+                ref={(c) => password = c} /> <br />        
+            <input type="text" id="firstName" placeholder="First Name..." 
+                ref={(c) => firstName = c} /> <br />
+            <input type="text" id="lastName" placeholder="Last Name..." 
+                ref={(c) => lastName = c} /> <br />
+            <input type="text" id="email" placeholder="Email..." 
+                ref={(c) => email = c} /> <br />
+            <input type="submit" id="registerButton" class="buttons" value = "Register"
+                onClick={doRegister} />
             <span id="registerResult">{message}</span>
+            </form>
+            <form action = "/">
+			<input type="submit" id="loginRedirectButton" class="buttons" value = "Go to Login"/>
+			</form>
         </div>
     );
 };

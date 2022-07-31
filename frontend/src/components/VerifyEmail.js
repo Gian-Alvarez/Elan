@@ -39,7 +39,7 @@ function VerifyEmail()
             }
             else 
             {	
-				setMessage('Click to Login');
+				setMessage('Your Email is Verified');
 			}
         })
         .catch(function (error) 
@@ -51,11 +51,14 @@ function VerifyEmail()
 	return (
 		<div id="verifyEmailDiv">
 			<form onSubmit={doVerifyEmail}>
-			<span id="inner-title">PLEASE VERIFY EMAIL</span><br />
-			<input type="submit" id="verifyEmailButton" class="buttons" value = "Do It"
+			<span id="inner-title">Please Verify Email</span><br />
+			<input type="submit" id="verifyEmailButton" class="buttons" value = "Verify Email"
 				onClick={doVerifyEmail} />
-			</form>
 			<span id="verifyEmailResult">{message}</span>
+			</form>
+			<form action = "/">
+			<input type="submit" id="loginRedirectButton" class="buttons" value = "Go to Login"/>
+			</form>
 		</div>
 	);
 };

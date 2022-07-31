@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import axios from 'axios';
 
-function FTLogin()
+function Home()
 {
 	let bp = require('./Path.js');
 	var storage = require('../tokenStorage.js');
@@ -10,12 +10,8 @@ function FTLogin()
     let ud = JSON.parse(_ud);
     let userId = ud.id;
 
-    var height = '';
     var age = 0;
-    var goalWeight = 0;
-    var startWeight = 0;
-    var calorieGoal = 0;
-	var activityLevel = 0;
+    
     const [message, setMessage] = useState('');
 
 	const doFTLogin = async event => 
@@ -23,7 +19,7 @@ function FTLogin()
 		event.preventDefault();
 
         var tok = storage.retrieveToken();
-		let obj = {userId:userId, activityLevel:activityLevel.value, height:height.value, age:age.value, goalWeight:goalWeight.value, startWeight:startWeight.value, calorieGoal:calorieGoal.value, jwtToken:tok};
+		let obj = {userId:userId, jwtToken:tok};
 		let js = JSON.stringify(obj);
 
 		var config = 
@@ -50,7 +46,7 @@ function FTLogin()
                 storage.storeToken(res.jwtToken);
 
 				setMessage('');
-				window.location.href = '/home';
+				window.location.href = '/cards';
             }
         })
         .catch(function (error) 
@@ -60,27 +56,24 @@ function FTLogin()
 	};
 
 	return (
-		<div id="ftLoginDiv">
+		<div id="homeDiv">
 			<form onSubmit={doFTLogin}>
 			<span id="inner-title">Please Enter Information</span><br />
             <input type="number" id="age" placeholder="Age..." 
 				ref={(c) => age = c} /> <br />
-            <input type="text" id="height" placeholder="Height(Ft. In.)..." 
-				ref={(c) => height = c} /> <br />
-            <input type="number" id="startWeight" placeholder="Current Weight in lbs..." 
-				ref={(c) => startWeight = c} /> <br />
-            <input type="number" id="goalWeight" placeholder="Goal Weight in lbs..." 
-				ref={(c) => goalWeight = c} /> <br />
-            <input type="number" id="calorieGoal" placeholder="Calorie Goal..." 
-				ref={(c) => calorieGoal = c} /> <br />
-            <input type="number" id="activityLevel" placeholder="Activity Level..." 
-				ref={(c) => activityLevel = c} /> <br />  
-			<input type="submit" id="ftLoginButton" class="buttons" value = "Login..."
-				onClick={doFTLogin} />
 			</form>
-			<span id="ftLoginResult">{message}</span>
+            <form action = "/profile">
+			<input type="submit" id="loginRedirectButton" class="buttons" value = "Profile"/>
+			</form>
+            <form action = "/addFood">
+			<input type="submit" id="addFoodButton" class="buttons" value = "Add Food"/>
+			</form>
+            <form action = "/weight">
+			<input type="submit" id="addFoodButton" class="buttons" value = "Weight"/>
+			</form>
+			<span id="homeResult">{message}</span>
 		</div>
 	);
 };
 
-export default FTLogin;
+export default Home;
