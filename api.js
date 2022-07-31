@@ -5,7 +5,7 @@ const User = require("./models/User.js");
 const Card = require("./models/Card.js");
 const Food = require("./models/Food.js");
 const Meal = require("./models/Meal.js");
-const Weight = require("./models/Weight.js");
+const Diet = require("./models/Diet.js");
 const Health = require("./models/Health.js");
 const Diary = require("./models/Diary.js");
 
@@ -61,6 +61,7 @@ exports.setApp = function ( app, client )
         let token = require('./createJWT.js');
 
         let error = '';
+        let ObjectID = '';
 
         const {userId, activityLevel, height, age, goalWeight, startWeight, calorieGoal, jwtToken} = req.body;
        
@@ -81,11 +82,35 @@ exports.setApp = function ( app, client )
         const results = await User.findByIdAndUpdate(userId, {First_Time_Login:1});
     
         const newHealth = Health({UserID:userId, Weight:[{Weight:startWeight}], Curr_Weight:startWeight, Activity_Level:activityLevel, Height:height, Age:age, Goal_Weight:goalWeight, Calorie_Goal:calorieGoal});
-        const newDiary = Diary({UserID:userId});
-
+        const newDiet = Diet({UserID:userId, Total_Calories:0});
+        
         try
         {
             newHealth.save();
+            newDiet.save();
+        }
+        catch(e)
+        {
+            error = e.toString();
+        }
+       
+
+
+        const results2 = await Diet.find({UserID:userId})
+        
+
+
+        if( results2.length > 0 )
+        {
+            console.log("hi");
+            ObjectID = results2[0]._id.toString();
+            console.log(ObjectID);
+        }
+
+        const newDiary = Diary({UserID:userId, Diet:{$push: Date, DietID:ObjectID}});
+        
+        try
+        {
             newDiary.save();
         }
         catch(e)
@@ -93,7 +118,6 @@ exports.setApp = function ( app, client )
             error = e.toString();
         }
 
-        
         var refreshedToken = null;
         try
         {
@@ -655,59 +679,6 @@ exports.setApp = function ( app, client )
     });
 
 
-    app.post('/api/getCalories', async (req, res, next) =>
-    {
-        // incoming: UserID.
-        // outgoing: Error.
-
-        let token = require('./createJWT.js');
-
-        let error = '';
-        let goal = 0;
-        let todaysCalories = 0;
-        
-        const {userId, jwtToken} = req.body;
-
-        try
-        {
-            if(token.isExpired(jwtToken))
-            {
-                var r = {error:'The JWT is no longer valid', jwtToken: ''};
-                res.status(200).json(r);
-                return;
-            }
-        }
-        catch(e)
-        {
-            console.log(e.message);
-        }
-
-        const results = await Health.find({UserID:userId});
-        if( results.length > 0 )
-        {
-            goal = results[0].Calorie_Goal;
-        }
-        
-        const results2 = await Diary.find({UserID:userId});
-        if( results.length > 0 )
-        {
-            todaysCalories = results2[0].Diet[-1].Total_Calories;
-        }
-
-        var refreshedToken = null;
-        try
-        {
-            refreshedToken = token.refresh(jwtToken);
-        }
-        catch(e)
-        {
-            console.log(e.message);
-        }
-              
-        var ret = {weights:weights, error: error, jwtToken: refreshedToken};
-        res.status(200).json(ret);
-    });
-
     //
     app.post('/api/addFood', async (req, res, next) =>
     {
@@ -771,7 +742,6 @@ exports.setApp = function ( app, client )
         var ret;
         
         const {userId, foodName, jwtToken} = req.body;
-
 
         try
         {
@@ -843,7 +813,7 @@ exports.setApp = function ( app, client )
 
         if( results.length > 0 )
         {
-            foods = results[0]
+            foods = results;
         }
         else
         {
@@ -864,17 +834,97 @@ exports.setApp = function ( app, client )
         res.status(200).json(ret);
     });
 
+    
+    //
+    app.post('/api/getCalories', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Error.
 
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let ObjectID = '';
+        let goal = 0;
+        let todaysCalories;
+        
+        const {userId, date, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Health.find({UserID:userId});
+        if( results.length > 0 )
+        {
+            goal = results[0].Calorie_Goal;
+        }
+                
+        const results2 = await Diary.find({UserID:userId});
+
+        let recentDate = results2[0].Diet[results2[0].Diet.length - 1].Date;
+        let beginOfDay = new Date(new Date() - (24*60*60*1000));
+        
+        if(recentDate < beginOfDay)
+        {
+            recentDate.setDate(recentDate.getDate() + 1);
+
+            const newDiet = Diet({UserID:userId, Date:recentDate, Total_Calories:0});
+            try
+            {            
+                const saveDiet = await newDiet.save();
+            }
+            catch(e)
+            {
+                error = e.toString();
+            }
+
+            const results2 = await Diet.find({UserID:userId});
+
+            ObjectID = results2[results2.length - 1]._id.toString();
+            const results3 = await Diary.findOneAndUpdate({UserID:userId}, {$push: {Diet:{Date:recentDate, DietID:ObjectID}}});  
+        }
+
+        const results4 = await Diary.find({UserID:userId});
+
+        ObjectID = results4[results4.length - 1].Diet[results4[results4.length - 1].Diet.length - 1].DietID.toString();
+        const results5 = await Diet.findById(ObjectID);
+        todaysCalories = results5.Total_Calories;
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+              
+        var ret = {goal:goal, todaysCalories:todaysCalories, error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
     app.post('/api/createMeal', async (req, res, next) =>
     {
-        // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
+        // incoming: Food ID Array, Meal Nutritional Information.
         // outgoing: Error.
 
         let token = require('./createJWT.js');
 
         let error = '';
 
-        const {userId, mealName, foodArray,} = req.body;
+        const {userId, mealName, mealProtein, mealCarbs, mealSugar, mealFat, mealSodium, mealCalories, foodArray, jwtToken} = req.body;
 
         try
         {
@@ -890,7 +940,7 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
         
-        const newMeal = Meal({UserID:userId, Name:mealName, Foods:foodArray});
+        const newMeal = Meal({UserID:userId, Name:mealName, Protein:mealProtein, Carbohydrates:mealCarbs, Sugar:mealSugar, Fat:mealFat, Sodium:mealSodium, Calories:mealCalories, Foods:foodArray});
 
         try
         {
@@ -914,18 +964,20 @@ exports.setApp = function ( app, client )
         var ret = {error: error, jwtToken: refreshedToken};
         res.status(200).json(ret);
     });
-
-    app.post('/api/getAllMeals', async (req, res, next) =>
+    //
+    app.post('/api/getMeal', async (req, res, next) =>
     {
-        // incoming: UserID.
+        // incoming: UserID, MealID.
         // outgoing: Meals.
 
         let token = require('./createJWT.js');
 
         let error = '';
-        let meals;
+        let meal;
         var ret;
 
+        const {userId, mealId, jwtToken} = req.body;
+        
         try
         {
             if(token.isExpired(jwtToken))
@@ -940,12 +992,63 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
 
-        const {userId} = req.body;
+        const results = await Meal.find({UserID:userId, _id:mealId});
+
+        if( results.length > 0 )
+        {
+            meal = results[0];
+        }
+        else
+        {
+            ret = {error:"Meal Doesn't Exist"};
+        }
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error:error, meal:meal, jwtToken:refreshedToken};
+        res.status(200).json(ret);
+    });
+    //
+    app.post('/api/getAllMeals', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Meals.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+        let meals;
+        var ret;
+
+        const {userId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
         const results = await Meal.find({UserID:userId});
 
         if( results.length > 0 )
         {
-            meals = results[0]
+            meals = results;
         }
         else
         {
@@ -965,20 +1068,20 @@ exports.setApp = function ( app, client )
         ret = {error:error, meals:meals, jwtToken:refreshedToken};
         res.status(200).json(ret);
     });
-
-    /*
-    app.post('/api/getFood', async (req, res, next) =>
+    //
+    app.post('/api/getMealHistory', async (req, res, next) =>
     {
-        // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
-        // outgoing: Error.
+        // incoming: UserID.
+        // outgoing: Meals.
 
         let token = require('./createJWT.js');
 
         let error = '';
+        let diet;
+        var ret;
 
-        const {userId, foodName, foodProtein, foodCarbs, foodSugar, foodFat, foodSodium, foodCalorie, foodServeSize, foodType, ssType, foodPhase, jwtToken} = req.body;
-        const newFood = Food({UserID:userId, Name:foodName, Protein:foodProtein, Carbohydrates:foodCarbs, Sugar:foodSugar, Fat:foodFat, Sodium:foodSodium, Calories:foodCalorie, Food_Type:foodType, Serving_Size:foodServeSize, SS_Type:ssType, Phase:foodPhase});
-
+        const {userId, jwtToken} = req.body;
+        
         try
         {
             if(token.isExpired(jwtToken))
@@ -993,13 +1096,15 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
 
-        try
+        const results = await Diet.find({UserID:userId});
+
+        if( results.length > 0 )
         {
-            newFood.save();
+            diet = results;
         }
-        catch(e)
+        else
         {
-            error = e.toString();
+            ret = {error:"Meal Doesn't Exist"};
         }
 
         var refreshedToken = null;
@@ -1012,17 +1117,66 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
         
-        var ret = {error: error, jwtToken: refreshedToken};
+        ret = {error:error, meals:meals, jwtToken:refreshedToken};
         res.status(200).json(ret);
     });
-    */
+    //
+    app.post('/api/addMealtoDiary', async (req, res, next) =>
+    {
+        // incoming: UserID.
+        // outgoing: Meals.
 
+        let token = require('./createJWT.js');
 
+        let error = '';
+        let newCal = 0;
+        var ret;
+
+        const {userId, calories, mealId, jwtToken} = req.body;
+        
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Diary.find({UserID:userId});
+
+        let ObjectID = results[0].Diet[results[0].Diet.length - 1].DietID;
+
+        console.log(ObjectID);
+
+        const results2 = await Diet.findById(ObjectID);
+        console.log(results2);
+        newCal = calories + results2.Total_Calories;
+        console.log(newCal)
+
+        const results3 = await Diet.findByIdAndUpdate(ObjectID, {Total_Calories:newCal});
+        console.log(mealId);
+        const results4 = await Diet.findByIdAndUpdate(ObjectID, {$push: {Meals: {MealID: mealId}}});
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        ret = {error:error, meals:meals, jwtToken:refreshedToken};
+        res.status(200).json(ret);
+    });
     
-
-
-    
-
 
 
     app.post('/api/addcard', async (req, res, next) =>

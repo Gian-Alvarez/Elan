@@ -10,6 +10,25 @@ const MealsSchema = new Schema({
         type: String,
         required: true
     },
+    Protein: {
+        type: Number
+    },
+    Carbohydrates: {
+        type: Number
+    },
+    Sugar: {
+        type:Number
+    },
+    Fat: {
+        type: Number
+    },
+    Sodium: {
+        type: Number
+    },
+    Calories: {
+        type: Number,
+        required: true
+    },
     Foods: [{
         FoodIDs: {
             type: String
