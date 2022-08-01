@@ -565,7 +565,7 @@ exports.setApp = function ( app, client )
 
         if( results.length > 0 )
         {
-            weights = results[0].Weight.slice(-1);
+            weights = results[0].Weight.slice(-10);
         }
         
         var refreshedToken = null;
