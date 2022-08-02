@@ -881,7 +881,7 @@ exports.setApp = function ( app, client )
         // incoming: UserID.
         // outgoing: Error.
 
-        //let token = require('./createJWT.js');
+        let token = require('./createJWT.js');
 
         let error = '';
         let ObjectID = '';
