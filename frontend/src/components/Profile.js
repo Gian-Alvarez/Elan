@@ -106,7 +106,7 @@ function Profile()
 	return (
 		<div id="ProfileDiv">
 			<form onSubmit={doEditUser}>
-			<span id="inner-title">User Information</span><br />
+			<span id="inner-title">Type In New User Information.</span><br />
             <input type="text" id="username" placeholder="Username..." 
 				ref={(c) => username = c} /> <br />
             <input type="password" id="password" placeholder="Password..." 
@@ -122,7 +122,7 @@ function Profile()
             <span id="editUserResult">{message}</span>
             </form>
             <form onSubmit={doEditHealth}>
-            <span id="inner-title">Health Information</span><br />
+            <span id="inner-title">Type In New Health Information.</span><br />
             <input type="number" id="age" placeholder="Age..." 
 				ref={(c) => age = c} /> <br />
             <input type="text" id="height" placeholder="Height..." 

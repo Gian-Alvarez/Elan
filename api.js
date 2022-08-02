@@ -565,7 +565,7 @@ exports.setApp = function ( app, client )
 
         if( results.length > 0 )
         {
-            weights = results[0].Weight.slice(-1);
+            weights = results[0].Weight.slice(-10);
         }
         
         var refreshedToken = null;
@@ -679,6 +679,46 @@ exports.setApp = function ( app, client )
     });
 
 
+    app.post('/api/deleteFood', async (req, res, next) =>
+    {
+        // incoming: Name, Protein, Carbohydrates, Sugar, Fat, Sodium, Calories, jwtToken.
+        // outgoing: Error.
+
+        let token = require('./createJWT.js');
+
+        let error = '';
+
+        const {foodId, jwtToken} = req.body;
+
+        try
+        {
+            if(token.isExpired(jwtToken))
+            {
+                var r = {error:'The JWT is no longer valid', jwtToken: ''};
+                res.status(200).json(r);
+                return;
+            }
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+
+        const results = await Food.findByIdAndDelete(foodId);
+
+        var refreshedToken = null;
+        try
+        {
+            refreshedToken = token.refresh(jwtToken);
+        }
+        catch(e)
+        {
+            console.log(e.message);
+        }
+        
+        var ret = {error: error, jwtToken: refreshedToken};
+        res.status(200).json(ret);
+    });
     //
     app.post('/api/addFood', async (req, res, next) =>
     {
@@ -841,7 +881,7 @@ exports.setApp = function ( app, client )
         // incoming: UserID.
         // outgoing: Error.
 
-        let token = require('./createJWT.js');
+        //let token = require('./createJWT.js');
 
         let error = '';
         let ObjectID = '';
@@ -1117,7 +1157,7 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
         
-        ret = {error:error, meals:meals, jwtToken:refreshedToken};
+        ret = {error:error, diet:diet, jwtToken:refreshedToken};
         res.status(200).json(ret);
     });
     //
@@ -1149,9 +1189,10 @@ exports.setApp = function ( app, client )
         }
 
         const results = await Diary.find({UserID:userId});
+        console.log(results)
 
         let ObjectID = results[0].Diet[results[0].Diet.length - 1].DietID;
-
+        
         console.log(ObjectID);
 
         const results2 = await Diet.findById(ObjectID);
@@ -1173,7 +1214,7 @@ exports.setApp = function ( app, client )
             console.log(e.message);
         }
         
-        ret = {error:error, meals:meals, jwtToken:refreshedToken};
+        ret = {error:error, jwtToken:refreshedToken};
         res.status(200).json(ret);
     });
     

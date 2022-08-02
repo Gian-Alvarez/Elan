@@ -2,6 +2,7 @@ import React from 'react';
 
 import PageTitle from '../components/PageTitle';
 import AddWeight from '../components/AddWeight';
+import WeightTable from '../components/WeightTable';
 
 const WeightPage = () =>
 {
@@ -9,6 +10,7 @@ const WeightPage = () =>
 		<div>
 			<PageTitle />
 			<AddWeight />
+			<WeightTable />
 		</div>
     );
 };

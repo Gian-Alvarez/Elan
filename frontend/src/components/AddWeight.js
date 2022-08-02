@@ -45,7 +45,7 @@ function AddWeight()
                 setMessage('Food has been added');
                 
                 storage.storeToken(res.jwtToken);
-                window.location.href = '/addweight';
+                window.location.href = '/weight';
             }
         })
         .catch(function(error) 

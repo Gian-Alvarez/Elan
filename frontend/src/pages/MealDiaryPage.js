@@ -1,13 +1,16 @@
 import React from 'react';
 
 import PageTitle from '../components/PageTitle';
-//import AddWeight from '../components/AddWeight';
+import AddMeal from '../components/AddMeal';
+import MealHistoryTable from '../components/MealHistoryTable';
 
 const MealDiaryPage = () =>
 {
     return(
 		<div>
 			<PageTitle />
+			<AddMeal />
+			<MealHistoryTable />
 		</div>
     );
 };

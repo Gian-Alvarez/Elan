@@ -30,8 +30,6 @@ import CreateMealPage from './pages/CreateMealPage';
 
 import CardPage from './pages/CardPage';
 
-
-
 function App() {
 return (
 	<BrowserRouter>
@@ -49,7 +47,7 @@ return (
 			<Route path="/weight" index element={<WeightPage />} />
 			<Route path="/weightdiary" index element={<WeightDiaryPage />} />
 
-			<Route path="/addFood" index element={<AddFoodPage />} />
+			<Route path="/food" index element={<AddFoodPage />} />
 			<Route path="/meal" index element={<MealPage />} />
 			<Route path="/mealdiary" index element={<MealDiaryPage />} />
 			<Route path="/createmeal" index element={<CreateMealPage />} />

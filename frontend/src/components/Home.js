@@ -57,19 +57,17 @@ function Home()
 
 	return (
 		<div id="homeDiv">
-			<form onSubmit={doFTLogin}>
-			<span id="inner-title">Please Enter Information</span><br />
-            <input type="number" id="age" placeholder="Age..." 
-				ref={(c) => age = c} /> <br />
-			</form>
             <form action = "/profile">
 			<input type="submit" id="loginRedirectButton" class="buttons" value = "Profile"/>
 			</form>
-            <form action = "/addFood">
-			<input type="submit" id="addFoodButton" class="buttons" value = "Add Food"/>
+            <form action = "/food">
+			<input type="submit" id="addFoodButton" class="buttons" value = "Food Options"/>
+			</form>
+            <form action = "/meal">
+			<input type="submit" id="addFoodButton" class="buttons" value = "Meal Options"/>
 			</form>
             <form action = "/weight">
-			<input type="submit" id="addFoodButton" class="buttons" value = "Weight"/>
+			<input type="submit" id="addFoodButton" class="buttons" value = "Weight Options"/>
 			</form>
 			<span id="homeResult">{message}</span>
 		</div>

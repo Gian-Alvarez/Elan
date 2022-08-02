@@ -29,7 +29,7 @@ function AddFood()
         event.preventDefault();
 
         var tok = storage.retrieveToken();
-        let obj = {userId:userId, foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value, foodCalorie:foodCalorie.value, foodServeSize:foodServeSize.value, foodType:foodType.value, ssType:ssType.value, foodPhase:foodPhase.value, jwtToken:tok};
+        let obj = {userId:userId, foodName:foodName.value,foodProtein:foodProtein.value, foodCarbs:foodCarbs.value, foodSugar:foodSugar.value, foodFat:foodFat.value,foodSodium:foodSodium.value, foodCalorie:foodCalorie.value, foodServeSize:foodServeSize.value, foodType:foodType.value, ssType:ssType.value, foodPhase:true, jwtToken:tok};
         let js = JSON.stringify(obj);
 
         var config = 
@@ -54,7 +54,7 @@ function AddFood()
                 setMessage('Food has been added');
                 
                 storage.storeToken(res.jwtToken);
-                window.location.href = '/addfood';
+                //window.location.href = '/food';
             }
         })
         .catch(function(error) 
@@ -66,30 +66,28 @@ function AddFood()
     return(
         <div id="AddFoodDiv">
             <form onSubmit={doAddFood}>
-            <span id="inner-title">ADD FOOD</span><br />
-            <input type="text" id="foodName" placeholder="Food Name" 
+            <span id="inner-title">Please Enter a Foods Information</span><br />
+            <input type="text" id="foodName" placeholder="Food Name..." 
                 ref={(c) => foodName = c} /> <br />
-            <input type="number" id="foodProtein" placeholder="Protein" 
+            <input type="number" id="foodProtein" placeholder="Protein..." 
                 ref={(c) => foodProtein = c} /> <br />        
-            <input type="number" id="foodCarbs" placeholder="Carbohydrates" 
+            <input type="number" id="foodCarbs" placeholder="Carbohydrates..." 
                 ref={(c) => foodCarbs = c} /> <br />
-            <input type="number" id="foodSugar" placeholder="Sugar" 
+            <input type="number" id="foodSugar" placeholder="Sugar..." 
                 ref={(c) => foodSugar = c} /> <br />
-            <input type="number" id="foodFat" placeholder="Fat" 
+            <input type="number" id="foodFat" placeholder="Fat..." 
                 ref={(c) => foodFat = c} /> <br />
-            <input type="number" id="foodSodium" placeholder="Sodium" 
+            <input type="number" id="foodSodium" placeholder="Sodium..." 
                 ref={(c) => foodSodium = c} /> <br />
-            <input type="number" id="foodCalorie" placeholder="Calories" 
+            <input type="number" id="foodCalorie" placeholder="Calories..." 
                 ref={(c) => foodCalorie = c} /> <br />
-            <input type="number" id="foodServeSize" placeholder="Serving Size" 
-                ref={(c) => foodCalorie = c} /> <br />
-            <input type="text" id="foodType" placeholder="Type of Food" 
+            <input type="number" id="foodServeSize" placeholder="Serving Size..." 
+                ref={(c) => foodServeSize = c} /> <br />
+            <input type="text" id="foodType" placeholder="Food Type (Ex: Fruit)..." 
                 ref={(c) => foodType = c} /> <br />
-            <input type="text" id="ssType" placeholder="SSType" 
+            <input type="text" id="ssType" placeholder="Unit (Ex: Grams...)" 
                 ref={(c) => ssType = c} /> <br />
-            <input type="text" id="foodPhase" placeholder="true/false" 
-                ref={(c) => foodPhase = c} /> <br />
-            <input type="submit" id="addFoodButton" class="buttons" value = "Do It"
+            <input type="submit" id="addFoodButton" class="buttons" value = "Add Food."
                 onClick={doAddFood} />
             </form>
             <span id="addFoodResult">{message}</span>

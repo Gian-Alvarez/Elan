@@ -62,7 +62,7 @@ function FTLogin()
 	return (
 		<div id="ftLoginDiv">
 			<form onSubmit={doFTLogin}>
-			<span id="inner-title">Please Enter Information</span><br />
+			<span id="inner-title">Welcome to Elan! Please Enter Information.</span><br />
             <input type="number" id="age" placeholder="Age..." 
 				ref={(c) => age = c} /> <br />
             <input type="text" id="height" placeholder="Height(Ft. In.)..." 
