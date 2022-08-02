@@ -54,6 +54,9 @@ function Profile()
             {	
                 storage.storeToken(res.jwtToken);
 
+                window.location.href = '/profile';
+
+
 				setMessage('Information Saved');
             }
         })
@@ -94,6 +97,7 @@ function Profile()
             {	
                 storage.storeToken(res.jwtToken);
 
+                window.location.href = '/profile';
 				setMessage('Information Saved');
             }
         })
@@ -119,7 +123,6 @@ function Profile()
 				ref={(c) => email = c} /> <br />
             <input type="submit" id="editUserButton" class="buttons" value = "Save Changes..."
 				onClick={doEditUser} />
-            <span id="editUserResult">{message}</span>
             </form>
             <form onSubmit={doEditHealth}>
             <span id="inner-title">Type In New Health Information.</span><br />
@@ -133,7 +136,9 @@ function Profile()
 				ref={(c) => goalCalories = c} /> <br />      
 			<input type="submit" id="editHealthButton" class="buttons" value = "Save Changes..."
 				onClick={doEditHealth} />
-			<span id="editHealthResult">{message}</span>
+            </form>
+            <form>
+            <span id="editHealthResult">{message}</span>
             </form>
             <form action = "/home">
 			<input type="submit" id="loginRedirectButton" class="buttons" value = "Go to Home"/>

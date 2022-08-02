@@ -54,7 +54,7 @@ function AddFood()
                 setMessage('Food has been added');
                 
                 storage.storeToken(res.jwtToken);
-                //window.location.href = '/food';
+                window.location.href = '/food';
             }
         })
         .catch(function(error) 
